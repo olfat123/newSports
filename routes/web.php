@@ -3,6 +3,7 @@
 Route::get('/themeHome', function (){
     symlink('/home4/mind/public_html/sports-mate.net/SportsMate/storage/app/public', '/home4/mind/public_html/sports-mate.net/storage') ;
 });
+
 Route::get('/try', function (){
     function trygetCountry() {
         function get_client_ip() {
@@ -118,6 +119,11 @@ Route::post('/markAllAsReadNoti', 'NotificationController@markAllAsReadNoti'); /
 Route::get('/getNoti', 'NotificationController@getNoti'); // final
 //***************** routes for Notifications **************//
 
+//**************** routes for Friendship **********/
+Route::get('/addfriend/{recipient}', 'FriendshipController@addFriend');
+Route::get('/acceptfriend/{sender}', 'FriendshipController@acceptRequests');
+Route::get('/unfriend/{sender}', 'FriendshipController@unFriend');
+Route::get('/rejectfriend/{sender}', 'FriendshipController@rejectFriend');
 //***************** routes for search **************//
     Route::get('/search/{model?}', 'SearchController@index'); // final
     

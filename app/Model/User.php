@@ -5,9 +5,11 @@ namespace App\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Hootlex\Friendships\Traits\Friendable;
 
 class User extends Authenticatable
 {
+    use Friendable;
     use Notifiable;
 
     /**

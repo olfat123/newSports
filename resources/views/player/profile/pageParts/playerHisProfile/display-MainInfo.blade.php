@@ -1,4 +1,59 @@
 <input type="hidden" name="playerId" value="{{ $user->id }}">
+@php
+ $requests = Auth::user()->getFriendRequests(); 
+@endphp   
+@foreach($requests as $request) 
+  <div>
+    {{$request->sender_id}}
+    <a class="btn btn-success" 
+            style="border-radius: 25px;background:orange;"
+            href="{{url('/')}}/acceptfriend/{{ $request->sender_id }}"
+           
+      >          
+          <span>{{ trans('player.Accept') }}</span>
+    </a>
+    <a class="btn btn-success" 
+            style="border-radius: 25px;background:orange;"
+            href="{{url('/')}}/rejectfriend/{{ $request->sender_id }}"
+           
+      >          
+          <span>{{ trans('player.Reject') }}</span>
+    </a>
+  </div>
+@endforeach
+@if (Auth::id() != $user->id)
+  @if($user->isFriendWith(Auth::user()))
+    <div class="text-center" style="">
+      <a class="btn btn-success" 
+            style="border-radius: 25px;background:orange;"
+            href="{{url('/')}}/unfriend/{{ $user->id }}"
+           
+      >          
+          <span>{{ trans('player.Unfriend') }}</span>
+        </a>
+    </div>
+  @elseif($user->hasFriendRequestFrom(Auth::user()))
+    <div class="text-center" style="">
+      <a class="btn btn-success" 
+            style="border-radius: 25px;background:orange;"
+            href=""
+           
+      >          
+          <span>{{ trans('player.Pending_request') }}</span>
+        </a>
+    </div>
+  @else
+    <div class="text-center" style="">
+      <a class="btn btn-success" 
+            style="border-radius: 25px;background:orange;"
+            href="{{url('/')}}/addfriend/{{ $user->id }}"
+           
+      >          
+          <span>{{ trans('player.Add_friend') }}</span>
+        </a>
+    </div>
+  @endif
+@endif
 <div class="profile-img-container text-center" style="padding: 25px 0px 0px 0px;">
   <div class="d-flex justify-content-center h-100">
     <div class="image_outer_container">
