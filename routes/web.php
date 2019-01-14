@@ -124,6 +124,7 @@ Route::get('/addfriend/{recipient}', 'FriendshipController@addFriend');
 Route::get('/acceptfriend/{sender}', 'FriendshipController@acceptRequests');
 Route::get('/unfriend/{sender}', 'FriendshipController@unFriend');
 Route::get('/rejectfriend/{sender}', 'FriendshipController@rejectFriend');
+Route::get('/friendRequests', 'FriendshipController@FriendRequests');
 //***************** routes for search **************//
     Route::get('/search/{model?}', 'SearchController@index'); // final
     

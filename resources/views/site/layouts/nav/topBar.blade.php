@@ -26,6 +26,10 @@
       <li><a href="{{ url('/') }}/search"><i class="fa fa-search"></i></a></li> 
       <li> | </li>
       <li>
+        <a href="/friendRequests"><i class="fa fa-users"></i></a>
+      </li>
+      <li> | </li>
+      <li>
         <a href="{{ url('/') }}/profile/{{sm_crypt(Auth::id())}}">
           <!-- <i class="fa fa-user"></i> -->
           <img style="width: 25px;"
@@ -39,6 +43,7 @@
       </li> 
       <li> | </li>
       <li><a href="{{ url('/') }}/logout"><i class="fa fa-sign-out"></i> {{ trans('player.logout') }}</a></li>
+      
     </ul>
   </div>
 {{-- auth player nav --}}

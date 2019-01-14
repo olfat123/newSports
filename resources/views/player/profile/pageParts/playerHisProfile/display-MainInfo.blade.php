@@ -48,7 +48,8 @@
             style="border-radius: 25px;background:orange;"
             href="{{url('/')}}/addfriend/{{ $user->id }}"
            
-      >          
+      >    
+      <i class="fa fa-plus-circle"></i>      
           <span>{{ trans('player.Add_friend') }}</span>
         </a>
     </div>

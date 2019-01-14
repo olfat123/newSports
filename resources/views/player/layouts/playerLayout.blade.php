@@ -106,6 +106,7 @@
                                                 <a href="{{ url('/profile/') }}/{{Auth::user()->slug}}/edit">Edit Profile</a>
                                             </li>
                                             @endif
+                                            
                                             <li>
                                                 <a href="{{ route('logout') }}"
                                                 onclick="event.preventDefault();

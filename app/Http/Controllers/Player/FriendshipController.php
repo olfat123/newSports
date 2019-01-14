@@ -46,7 +46,8 @@ class FriendshipController extends Controller
     }
     public function FriendRequests() 
 	{        
-        Auth::user()->getFriendRequests();
+       // Auth::user()->getFriendRequests();
+       return view('player/friends/friendsRequests',compact('Friends Requests'));
     }
     public function BlockedFriendships($recipient) 
 	{
