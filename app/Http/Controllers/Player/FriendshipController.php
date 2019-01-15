@@ -49,6 +49,7 @@ class FriendshipController extends Controller
        $friends = Auth::user()->getFriendRequests();
        $title = 'Friendship Requests' ;
        return view('player/friends/friendsRequests',compact('title','friends'));
+      
     }
     public function BlockedFriendships($recipient) 
 	{
@@ -58,6 +59,20 @@ class FriendshipController extends Controller
 	{
         Auth::user()->getMutualFriendsCount($anotherUser);
     }
-    
+
+
+
+
+////////////////////////Start Function to return json for vue//////////////////////////////
+    public function ApiFriendRequests() 
+	{        
+       $friends = Auth::user()->getFriendRequests();
+       $title = 'Friendship Requests' ;
+       foreach($friends as $friend){
+           $items[] = $friend->sender;
+       }   
+       return $items;
+    }
+////////////////////////End Function to return json for vue////////////////////
 }
 
