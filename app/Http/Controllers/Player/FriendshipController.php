@@ -65,12 +65,29 @@ class FriendshipController extends Controller
 
 ////////////////////////Start Function to return json for vue//////////////////////////////
     public function ApiFriendRequests() 
-	{        
-       $friends = Auth::user()->getFriendRequests();
+	{      
+       // return $users = User::with('playerProfile')->get();  
+       $friendRequests = Auth::user()->getFriendRequests();
        $title = 'Friendship Requests' ;
-       foreach($friends as $friend){
-           $items[] = $friend->sender;
-       }   
+       foreach($friendRequests as $friend){
+
+           $all_requests = $friend->sender->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
+           //return $all_requests->playerProfile->averageRating;
+           $items['sender'][] = $all_requests;
+       }  
+       
+       $pendingRequests = Auth::user()->getPendingFriendships();
+       foreach($pendingRequests as $friend){
+           if($friend->recipient_id != Auth::id())
+            $id = $friend->recipient_id;
+            $recipient = User::find($id);
+            $all_pendings = $recipient->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
+            $items['pending'][] = $all_pendings;
+
+       }
+       $items['pending']= array_unique($items['pending']);
+       $items['dir'] = direction();
+
        return $items;
     }
 ////////////////////////End Function to return json for vue////////////////////

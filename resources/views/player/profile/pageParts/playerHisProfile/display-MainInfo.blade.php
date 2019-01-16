@@ -1,26 +1,5 @@
 <input type="hidden" name="playerId" value="{{ $user->id }}">
-@php
- $requests = Auth::user()->getFriendRequests(); 
-@endphp   
-@foreach($requests as $request) 
-  <div>
-    {{$request->sender_id}}
-    <a class="btn btn-success" 
-            style="border-radius: 25px;background:orange;"
-            href="{{url('/')}}/acceptfriend/{{ $request->sender_id }}"
-           
-      >          
-          <span>{{ trans('player.Accept') }}</span>
-    </a>
-    <a class="btn btn-success" 
-            style="border-radius: 25px;background:orange;"
-            href="{{url('/')}}/rejectfriend/{{ $request->sender_id }}"
-           
-      >          
-          <span>{{ trans('player.Reject') }}</span>
-    </a>
-  </div>
-@endforeach
+
 @if (Auth::id() != $user->id)
   @if($user->isFriendWith(Auth::user()))
     <div class="text-center" style="">
