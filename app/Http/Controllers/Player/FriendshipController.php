@@ -59,6 +59,29 @@ class FriendshipController extends Controller
 	{
         Auth::user()->getMutualFriendsCount($anotherUser);
     }
+    public function IsFriendwith($friend) 
+	{
+        $friend_id = $friend;
+        $friend = User::find($friend);
+       // $friend
+        $user_status = Auth::user()->isFriendWith($friend);
+        $pending = Auth::user()->hasSentFriendRequestTo($friend);
+        $respond = Auth::user()->hasFriendRequestFrom($friend);
+        if($pending){
+            $status['friend_status'] = 'pending';
+        }
+        elseif($user_status){
+            $status['friend_status'] = 'un';
+        }elseif($respond){
+            $status['friend_status'] = 'respond';
+        }else{
+            $status['friend_status'] = 'add';
+        }
+        $status['dir'] = direction();
+        $status['friend_id'] = $friend_id;
+        return $status;
+    }
+
 
 
 
@@ -67,29 +90,56 @@ class FriendshipController extends Controller
     public function ApiFriendRequests() 
 	{      
        // return $users = User::with('playerProfile')->get();  
-       $friendRequests = Auth::user()->getFriendRequests();
-       $title = 'Friendship Requests' ;
-       foreach($friendRequests as $friend){
+       $friendRequests = Auth::user()->getFriendRequests();     
+       if($friendRequests){
+           foreach($friendRequests as $friend){
 
-           $all_requests = $friend->sender->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
-           //return $all_requests->playerProfile->averageRating;
-           $items['sender'][] = $all_requests;
-       }  
-       
-       $pendingRequests = Auth::user()->getPendingFriendships();
-       foreach($pendingRequests as $friend){
-           if($friend->recipient_id != Auth::id())
-            $id = $friend->recipient_id;
-            $recipient = User::find($id);
-            $all_pendings = $recipient->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
-            $items['pending'][] = $all_pendings;
-
+                $all_requests = $friend->sender->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
+                //return $all_requests->playerProfile->averageRating;
+                $items['sender'][] = $all_requests;
+            }  
        }
-       $items['pending']= array_unique($items['pending']);
+       
+         
+        $allFiendships = Auth::user()->getFriends();   
+        if($allFiendships)  {
+            foreach($allFiendships as $friend){
+               
+                $all_friends = $friend->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
+                
+                $items['all'][] = $all_friends;
+            }
+        }     
+         
+       $pendingRequests = Auth::user()->getPendingFriendships();
+       if(!empty($pendingRequests)){
+           foreach($pendingRequests as $friend){
+                if($friend->recipient_id != Auth::id())
+                    $id = $friend->recipient_id;
+                    if(!empty($id)){
+                        $recipient = User::find($id); 
+                        $all_pendings = $recipient->load(['playerProfile.country', 'playerProfile.governorate', 'playerProfile.area']);
+                        $items['pending'][] = $all_pendings;
+                    }
+                    
+                   
+            }
+            if(!empty($items['pending'])){
+                $items['pending']= array_unique($items['pending']);  
+            }
+              
+       }
+       
+                
        $items['dir'] = direction();
 
        return $items;
     }
 ////////////////////////End Function to return json for vue////////////////////
+////////////////////////Start Encrypt Player ID for vue////////////////////
+    public function encryptID($id) { 
+        return sm_crypt($id);
+    }
+////////////////////////End Encrypt Player ID for vue////////////////////
 }
 

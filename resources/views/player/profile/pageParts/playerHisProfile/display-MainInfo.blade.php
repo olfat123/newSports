@@ -1,39 +1,10 @@
 <input type="hidden" name="playerId" value="{{ $user->id }}">
-
 @if (Auth::id() != $user->id)
-  @if($user->isFriendWith(Auth::user()))
-    <div class="text-center" style="">
-      <a class="btn btn-success" 
-            style="border-radius: 25px;background:orange;"
-            href="{{url('/')}}/unfriend/{{ $user->id }}"
-           
-      >          
-          <span>{{ trans('player.Unfriend') }}</span>
-        </a>
-    </div>
-  @elseif($user->hasFriendRequestFrom(Auth::user()))
-    <div class="text-center" style="">
-      <a class="btn btn-success" 
-            style="border-radius: 25px;background:orange;"
-            href=""
-           
-      >          
-          <span>{{ trans('player.Pending_request') }}</span>
-        </a>
-    </div>
-  @else
-    <div class="text-center" style="">
-      <a class="btn btn-success" 
-            style="border-radius: 25px;background:orange;"
-            href="{{url('/')}}/addfriend/{{ $user->id }}"
-           
-      >    
-      <i class="fa fa-plus-circle"></i>      
-          <span>{{ trans('player.Add_friend') }}</span>
-        </a>
-    </div>
-  @endif
+  <div id="addfriends">
+    <add-friend :user="{{$user->id}}"></add-friend>
+  </div>
 @endif
+
 <div class="profile-img-container text-center" style="padding: 25px 0px 0px 0px;">
   <div class="d-flex justify-content-center h-100">
     <div class="image_outer_container">

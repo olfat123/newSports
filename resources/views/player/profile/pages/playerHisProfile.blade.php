@@ -184,5 +184,7 @@
 @section('page_specific_scripts')
     <!-- player cripts-->
     <script src="{{ url('/') }}/player/js/playerprofile.js"></script>
+    <script type="text/javascript" src="{{ asset('js/friends.js')}}"></script>
+    
     <!-- player cripts-->
 @stop

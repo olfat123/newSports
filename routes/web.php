@@ -3,6 +3,8 @@
 Route::get('/themeHome', function (){
     symlink('/home4/mind/public_html/sports-mate.net/SportsMate/storage/app/public', '/home4/mind/public_html/sports-mate.net/storage') ;
 });
+Route::get('encryptid/{id}', 'player\FriendshipController@encryptID');
+ 
 
 Route::get('/try', function (){
     function trygetCountry() {
@@ -42,6 +44,15 @@ Route::get('/try', function (){
    return trygetCountry();
 
 }); 
+
+Route::get('/collect', function(){
+    $friends = Auth::user()->getFriends();
+    $users = App\Model\User::all();
+    //$collection = collect($friends, $users);
+    $collection = collect($friends)->concat($users)->sortByDesc('id')->unique('id') ;
+   //return $collection;
+   return $users;
+});
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -126,6 +137,7 @@ Route::get('/unfriend/{sender}', 'FriendshipController@unFriend');
 Route::get('/rejectfriend/{sender}', 'FriendshipController@rejectFriend');
 Route::get('/friendRequests', 'FriendshipController@FriendRequests');
 Route::get('/ApiFriendRequests', 'FriendshipController@ApiFriendRequests');
+Route::get('/IsFriendWith/{friend}', 'FriendshipController@IsFriendwith');
 //***************** routes for search **************//
     Route::get('/search/{model?}', 'SearchController@index'); // final
     

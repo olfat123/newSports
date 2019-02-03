@@ -137,6 +137,7 @@ class EventController extends Controller
 			if ($sportExists == 'false') {
 				Auth::user()->sports()->attach($sport);
 			}
+			$friends = Auth::user()->getFriends();
 			$users = User::where('id', '!=', Auth::id())
                         ->whereHas('playerProfile',function($query){
                                     $query->where('p_country', '=', Auth::user()->playerProfile->p_country)
@@ -147,9 +148,10 @@ class EventController extends Controller
                         ->whereHas('sports',function($query) use($sport){
                             $query->where('sports.id', '=', $sport);
                         })
-                        ->get();
+						->get();
+			$collection = collect($friends)->concat($users)->sortByDesc('id')->unique('id') ;
 			//$users->notify(new newEvent($creator, $event));
-			\Notification::send($users, new newEvent($creator, $event));
+			\Notification::send($collection, new newEvent($creator, $event));
 
 			return 'true' ;
 		} else {

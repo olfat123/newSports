@@ -70,7 +70,7 @@
 "use strict";
 
 
-var bind = __webpack_require__(5);
+var bind = __webpack_require__(6);
 var isBuffer = __webpack_require__(20);
 
 /*global toString:true*/
@@ -457,10 +457,10 @@ function getDefaultAdapter() {
   var adapter;
   if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
-    adapter = __webpack_require__(6);
+    adapter = __webpack_require__(7);
   } else if (typeof process !== 'undefined') {
     // For node use HTTP adapter
-    adapter = __webpack_require__(6);
+    adapter = __webpack_require__(7);
   }
   return adapter;
 }
@@ -531,10 +531,119 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports) {
 
 var g;
@@ -561,7 +670,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -751,7 +860,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -769,7 +878,7 @@ module.exports = function bind(fn, thisArg) {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -780,7 +889,7 @@ var settle = __webpack_require__(23);
 var buildURL = __webpack_require__(25);
 var parseHeaders = __webpack_require__(26);
 var isURLSameOrigin = __webpack_require__(27);
-var createError = __webpack_require__(7);
+var createError = __webpack_require__(8);
 var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(28);
 
 module.exports = function xhrAdapter(config) {
@@ -956,7 +1065,7 @@ module.exports = function xhrAdapter(config) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -981,7 +1090,7 @@ module.exports = function createError(message, config, code, request, response) 
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -993,7 +1102,7 @@ module.exports = function isCancel(value) {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1019,115 +1128,6 @@ module.exports = Cancel;
 
 
 /***/ }),
-/* 10 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1139,7 +1139,6 @@ module.exports = __webpack_require__(12);
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(1);
-
 window.Vue = __webpack_require__(13);
 window.VueAxios = __webpack_require__(16).default;
 window.VueRouter = __webpack_require__(17).default;
@@ -1147,15 +1146,24 @@ window.Axios = __webpack_require__(18).default;
 var AppLayout = __webpack_require__(37);
 var requestFriends = Vue.component('requestFriends', __webpack_require__(40));
 
+//Vue.forceUpdate();
 Vue.use(VueRouter, VueAxios, Axios);
 var routes = [{
     name: 'requestFriends',
     path: '/friendRequests',
     component: requestFriends
 }];
+
 var router = new VueRouter({ mode: 'history', routes: routes });
 
 new Vue(Vue.util.extend({ router: router }, AppLayout)).$mount('#app');
+
+Vue.component('add-friend', __webpack_require__(43));
+
+new Vue({
+    el: '#addfriends'
+
+});
 
 /***/ }),
 /* 13 */
@@ -12015,7 +12023,7 @@ Vue$3.compile = compileToFunctions;
 
 module.exports = Vue$3;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(14).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(14).setImmediate))
 
 /***/ }),
 /* 14 */
@@ -12267,7 +12275,7 @@ exports.clearImmediate = clearImmediate;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(5)))
 
 /***/ }),
 /* 16 */
@@ -14918,7 +14926,7 @@ module.exports = __webpack_require__(19);
 
 
 var utils = __webpack_require__(0);
-var bind = __webpack_require__(5);
+var bind = __webpack_require__(6);
 var Axios = __webpack_require__(21);
 var defaults = __webpack_require__(2);
 
@@ -14953,9 +14961,9 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__(9);
+axios.Cancel = __webpack_require__(10);
 axios.CancelToken = __webpack_require__(35);
-axios.isCancel = __webpack_require__(8);
+axios.isCancel = __webpack_require__(9);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -15115,7 +15123,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 "use strict";
 
 
-var createError = __webpack_require__(7);
+var createError = __webpack_require__(8);
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -15534,7 +15542,7 @@ module.exports = InterceptorManager;
 
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(32);
-var isCancel = __webpack_require__(8);
+var isCancel = __webpack_require__(9);
 var defaults = __webpack_require__(2);
 
 /**
@@ -15687,7 +15695,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 "use strict";
 
 
-var Cancel = __webpack_require__(9);
+var Cancel = __webpack_require__(10);
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -15783,7 +15791,7 @@ module.exports = function spread(callback) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(10)
+var normalizeComponent = __webpack_require__(3)
 /* script */
 var __vue_script__ = __webpack_require__(38)
 /* template */
@@ -15854,12 +15862,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { staticClass: "container" },
-    [_c("transition", { attrs: { name: "fade" } }, [_c("router-view")], 1)],
-    1
-  )
+  return _c("transition", { attrs: { name: "fade" } }, [_c("router-view")], 1)
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -15876,7 +15879,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(10)
+var normalizeComponent = __webpack_require__(3)
 /* script */
 var __vue_script__ = __webpack_require__(41)
 /* template */
@@ -16163,33 +16166,153 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
             requests: '',
             pendings: '',
-            direction: ''
+            allFriends: '',
+            direction: '',
+            encryptedID: '',
+            EN: {
+                allFriends: 'All Friends',
+                friendRequests: 'Friends Requests',
+                accept: 'Accept',
+                reject: 'Reject',
+                pendingRequests: 'Pending Requests'
+            },
+            AR: {
+                allFriends: 'كل الأصدقاء',
+                friendRequests: 'طلبات الصداقة',
+                accept: 'قبول',
+                reject: 'رفض',
+                pendingRequests: 'طلبات الصداقه المعلقه'
+            }
         };
     },
     created: function created() {
         var _this = this;
 
-        var uri = 'http://localhost:8000/ApiFriendRequests';
+        var uri = '/ApiFriendRequests';
         Axios.get(uri).then(function (response) {
             console.log(response);
             _this.requests = response.data.sender;
             _this.pendings = response.data.pending;
             _this.direction = response.data.dir;
+            _this.allFriends = response.data.all;
         });
     },
     computed: {
         filteredrequests: function filteredrequests() {
-            if (this.requests.length) {
+            if (this.requests) {
                 return this.requests;
             }
         }
+    },
+    methods: {
+        encrypt: function encrypt(id) {
+            var _this2 = this;
 
+            var uri = '/encryptid/' + id;
+            Axios.get(uri).then(function (response) {
+                console.log(response);
+                _this2.encryptedID = response.data;
+            });
+        },
+        accept: function accept(id) {
+            var _this3 = this;
+
+            var uri = '/acceptfriend/' + id;
+            Axios.get(uri).then(function (response) {
+                console.log(response);
+                //this.$forceUpdate();         
+            });
+            var url = '/ApiFriendRequests';
+            Axios.get(url).then(function (response) {
+                console.log(response);
+                _this3.requests = response.data.sender;
+                _this3.pendings = response.data.pending;
+                _this3.direction = response.data.dir;
+                _this3.allFriends = response.data.all;
+            });
+        },
+        reject: function reject(id) {
+            var _this4 = this;
+
+            var uri = '/rejectfriend/' + id;
+            Axios.get(uri).then(function (response) {
+                console.log(response);
+            });
+            var url = '/ApiFriendRequests';
+            Axios.get(url).then(function (response) {
+                console.log(response);
+                _this4.requests = response.data.sender;
+                _this4.pendings = response.data.pending;
+                _this4.direction = response.data.dir;
+                _this4.allFriends = response.data.all;
+            });
+        }
     }
 });
 
@@ -16212,7 +16335,29 @@ var render = function() {
               "div",
               { staticClass: "panel panel-default shade top-bottom-border" },
               [
-                _vm._m(0),
+                _c(
+                  "div",
+                  {
+                    staticClass: "panel-heading text-center shade bottom-border"
+                  },
+                  [
+                    _vm.direction === "ltr"
+                      ? _c(
+                          "h4",
+                          {
+                            staticStyle: { color: "#06774a", margin: "5px 0px" }
+                          },
+                          [_vm._v(_vm._s(_vm.EN.allFriends))]
+                        )
+                      : _c(
+                          "h4",
+                          {
+                            staticStyle: { color: "#06774a", margin: "5px 0px" }
+                          },
+                          [_vm._v(_vm._s(_vm.AR.allFriends))]
+                        )
+                  ]
+                ),
                 _vm._v(" "),
                 _c(
                   "div",
@@ -16220,16 +16365,16 @@ var render = function() {
                     staticClass: "scroll",
                     staticStyle: {
                       "background-color": "#fff",
-                      height: "500px",
+                      height: "300px",
                       "overflow-y": "scroll",
                       "margin-bottom": "20px"
                     }
                   },
-                  _vm._l(_vm.filteredrequests, function(request) {
+                  _vm._l(_vm.allFriends, function(friend) {
                     return _c(
                       "div",
                       {
-                        key: request.id,
+                        key: friend.id,
                         staticClass: "col-sm-3 col-xs-6 text-center"
                       },
                       [
@@ -16237,7 +16382,12 @@ var render = function() {
                           "a",
                           {
                             staticClass: "a-holding-divs",
-                            attrs: { href: "" }
+                            attrs: { href: "profile/" + _vm.encryptedID },
+                            on: {
+                              mouseover: function($event) {
+                                _vm.encrypt(friend.id)
+                              }
+                            }
                           },
                           [
                             _c(
@@ -16294,7 +16444,7 @@ var render = function() {
                                                       attrs: {
                                                         src:
                                                           "storage/" +
-                                                          request.user_img
+                                                          friend.user_img
                                                       }
                                                     })
                                                   ]
@@ -16326,7 +16476,7 @@ var render = function() {
                                           [
                                             _vm._v(
                                               "\n\t\t\t\t\t\t\t\t\t\t\t" +
-                                                _vm._s(request.name) +
+                                                _vm._s(friend.name) +
                                                 "\n\t\t\t\t\t\t\t\t\t\t"
                                             )
                                           ]
@@ -16347,7 +16497,7 @@ var render = function() {
                                                   _vm._v(
                                                     "\n\t\t\t\t\t\t\t\t\t\t\t\t" +
                                                       _vm._s(
-                                                        request.player_profile
+                                                        friend.player_profile
                                                           .country.c_en_name
                                                       ) +
                                                       " \n                                            "
@@ -16357,7 +16507,7 @@ var render = function() {
                                                   _vm._v(
                                                     "\n                                                " +
                                                       _vm._s(
-                                                        request.player_profile
+                                                        friend.player_profile
                                                           .country.c_ar_name
                                                       ) +
                                                       "\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t"
@@ -16371,7 +16521,7 @@ var render = function() {
                                                   _vm._v(
                                                     "\n                                                " +
                                                       _vm._s(
-                                                        request.player_profile
+                                                        friend.player_profile
                                                           .governorate.g_en_name
                                                       ) +
                                                       " \n                                            "
@@ -16381,7 +16531,7 @@ var render = function() {
                                                   _vm._v(
                                                     "\n                                                " +
                                                       _vm._s(
-                                                        request.player_profile
+                                                        friend.player_profile
                                                           .governorate.g_ar_name
                                                       ) +
                                                       "\t\t\t\t\t\t\t\t\t\n                                            "
@@ -16395,7 +16545,7 @@ var render = function() {
                                                   _vm._v(
                                                     "\n                                                " +
                                                       _vm._s(
-                                                        request.player_profile
+                                                        friend.player_profile
                                                           .area.a_en_name
                                                       ) +
                                                       "\n                                            "
@@ -16405,7 +16555,7 @@ var render = function() {
                                                   _vm._v(
                                                     "\n                                                " +
                                                       _vm._s(
-                                                        request.player_profile
+                                                        friend.player_profile
                                                           .area.a_ar_name
                                                       ) +
                                                       "\n                                            "
@@ -16418,7 +16568,7 @@ var render = function() {
                                           _vm._v(
                                             "\t\t\t\t\t\t\t\t\t\t\n                                            \n\t\t\t\t\t\t\t\t\t\t\t\t" +
                                               _vm._s(
-                                                request.player_profile
+                                                friend.player_profile
                                                   .averageRating
                                               ) +
                                               "\n\t\t\t\t\t\t\t\t\t\t\t\t\t"
@@ -16455,294 +16605,1037 @@ var render = function() {
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "container" }, [
-      _c("div", { staticClass: "row" }, [
-        _c(
-          "div",
-          { staticClass: "col-md-12", attrs: { id: "search-filtter" } },
-          [
-            _c(
-              "div",
-              { staticClass: "panel panel-default shade top-bottom-border" },
-              [
-                _vm._m(1),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  {
-                    staticClass: "scroll",
-                    staticStyle: {
-                      "background-color": "#fff",
-                      height: "500px",
-                      "overflow-y": "scroll",
-                      "margin-bottom": "20px"
-                    }
-                  },
-                  _vm._l(_vm.pendings, function(request) {
-                    return _c(
-                      "div",
-                      {
-                        key: request.id,
-                        staticClass: "col-sm-3 col-xs-6 text-center"
-                      },
-                      [
-                        _c(
-                          "a",
-                          {
-                            staticClass: "a-holding-divs",
-                            attrs: { href: "" }
-                          },
-                          [
-                            _c(
-                              "div",
-                              {
-                                staticClass: "Player shade border-20",
-                                staticStyle: {
-                                  border: "1px solid #ffa500",
-                                  margin: "5px 0px"
-                                }
-                              },
-                              [
-                                _c("div", { staticClass: "row" }, [
-                                  _c("div", { staticClass: "col-md-4" }, [
+      _c("div", { staticClass: " col-md-6" }, [
+        _c("div", { staticClass: "row" }, [
+          _c(
+            "div",
+            { staticClass: "col-md-12", attrs: { id: "search-filtter" } },
+            [
+              _c(
+                "div",
+                { staticClass: "panel panel-default shade top-bottom-border" },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "panel-heading text-center shade bottom-border"
+                    },
+                    [
+                      _vm.direction === "ltr"
+                        ? _c(
+                            "h4",
+                            {
+                              staticStyle: {
+                                color: "#06774a",
+                                margin: "5px 0px"
+                              }
+                            },
+                            [_vm._v(_vm._s(_vm.EN.friendRequests))]
+                          )
+                        : _c(
+                            "h4",
+                            {
+                              staticStyle: {
+                                color: "#06774a",
+                                margin: "5px 0px"
+                              }
+                            },
+                            [_vm._v(_vm._s(_vm.AR.friendRequests))]
+                          )
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "scroll",
+                      staticStyle: {
+                        "background-color": "#fff",
+                        height: "300px",
+                        "overflow-y": "scroll",
+                        "margin-bottom": "20px"
+                      }
+                    },
+                    _vm._l(_vm.filteredrequests, function(request) {
+                      return _c(
+                        "div",
+                        {
+                          key: request.id,
+                          staticClass: "col-sm-6 col-xs-12 text-center"
+                        },
+                        [
+                          _c(
+                            "div",
+                            {
+                              staticClass: "Player shade border-20",
+                              staticStyle: {
+                                border: "1px solid #ffa500",
+                                margin: "5px 0px"
+                              }
+                            },
+                            [
+                              _c("div", { staticClass: "row" }, [
+                                _c("div", { staticClass: "col-md-4" }, [
+                                  _c(
+                                    "a",
+                                    {
+                                      staticClass: "a-holding-divs",
+                                      attrs: {
+                                        href: "profile/" + _vm.encryptedID
+                                      },
+                                      on: {
+                                        mouseover: function($event) {
+                                          _vm.encrypt(request.id)
+                                        }
+                                      }
+                                    },
+                                    [
+                                      _c(
+                                        "div",
+                                        {
+                                          staticClass:
+                                            "profile-img-container text-center",
+                                          staticStyle: {
+                                            padding: "5px 0px 0px 0px"
+                                          }
+                                        },
+                                        [
+                                          _c(
+                                            "div",
+                                            {
+                                              staticClass:
+                                                "d-flex justify-content-center h-100"
+                                            },
+                                            [
+                                              _c(
+                                                "div",
+                                                {
+                                                  staticClass:
+                                                    "image_outer_container"
+                                                },
+                                                [
+                                                  _c(
+                                                    "div",
+                                                    {
+                                                      staticClass:
+                                                        "image_inner_container"
+                                                    },
+                                                    [
+                                                      _c("img", {
+                                                        staticClass: "shade",
+                                                        staticStyle: {
+                                                          height: "50px",
+                                                          width: "50px",
+                                                          border:
+                                                            "2px solid #f89406"
+                                                        },
+                                                        attrs: {
+                                                          src:
+                                                            "storage/" +
+                                                            request.user_img
+                                                        }
+                                                      })
+                                                    ]
+                                                  )
+                                                ]
+                                              )
+                                            ]
+                                          )
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-md-8" }, [
+                                  _c(
+                                    "div",
+                                    {
+                                      staticStyle: { "margin-bottom": "10px" }
+                                    },
+                                    [
+                                      _c(
+                                        "a",
+                                        {
+                                          staticClass: "a-holding-divs",
+                                          attrs: {
+                                            href: "profile/" + _vm.encryptedID
+                                          },
+                                          on: {
+                                            mouseover: function($event) {
+                                              _vm.encrypt(request.id)
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _c(
+                                            "h3",
+                                            {
+                                              staticStyle: {
+                                                "padding-top": "5px !important",
+                                                "margin-bottom":
+                                                  "5px !important",
+                                                "font-size": "12px"
+                                              }
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n                                                    " +
+                                                  _vm._s(request.name) +
+                                                  "\n                                                "
+                                              )
+                                            ]
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "p",
+                                        {
+                                          staticStyle: { "font-size": "11px" }
+                                        },
+                                        [
+                                          _c("i", {
+                                            staticClass: "fa fa-map-marker"
+                                          }),
+                                          _vm._v(" "),
+                                          _vm.direction === "ltr"
+                                            ? _c("span", [
+                                                _vm._v(
+                                                  "\n                                                    " +
+                                                    _vm._s(
+                                                      request.player_profile
+                                                        .country.c_en_name
+                                                    ) +
+                                                    " \n                                                "
+                                                )
+                                              ])
+                                            : _c("span", [
+                                                _vm._v(
+                                                  "\n                                                    " +
+                                                    _vm._s(
+                                                      request.player_profile
+                                                        .country.c_ar_name
+                                                    ) +
+                                                    "\t\t\t\t\t\t\t\t\t\t\t\n                                                "
+                                                )
+                                              ]),
+                                          _vm._v(
+                                            "\n                                                , \n                                                "
+                                          ),
+                                          _vm.direction === "ltr"
+                                            ? _c("span", [
+                                                _vm._v(
+                                                  "\n                                                    " +
+                                                    _vm._s(
+                                                      request.player_profile
+                                                        .governorate.g_en_name
+                                                    ) +
+                                                    " \n                                                "
+                                                )
+                                              ])
+                                            : _c("span", [
+                                                _vm._v(
+                                                  "\n                                                    " +
+                                                    _vm._s(
+                                                      request.player_profile
+                                                        .governorate.g_ar_name
+                                                    ) +
+                                                    "\t\t\t\t\t\t\t\t\t\n                                                "
+                                                )
+                                              ]),
+                                          _vm._v(
+                                            "\n                                                ,\n                                                "
+                                          ),
+                                          _vm.direction === "ltr"
+                                            ? _c("span", [
+                                                _vm._v(
+                                                  "\n                                                    " +
+                                                    _vm._s(
+                                                      request.player_profile
+                                                        .area.a_en_name
+                                                    ) +
+                                                    "\n                                                "
+                                                )
+                                              ])
+                                            : _c("span", [
+                                                _vm._v(
+                                                  "\n                                                    " +
+                                                    _vm._s(
+                                                      request.player_profile
+                                                        .area.a_ar_name
+                                                    ) +
+                                                    "\n                                                "
+                                                )
+                                              ])
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c("span", [
+                                        _vm._v(
+                                          "\t\t\t\t\t\t\t\t\t\t\n                                                \n                                                    " +
+                                            _vm._s(
+                                              request.player_profile
+                                                .averageRating
+                                            ) +
+                                            "\n                                                        "
+                                        ),
+                                        _c("i", {
+                                          staticClass: "fa fa-star",
+                                          staticStyle: { color: "#ffb300" },
+                                          attrs: { "aria-hidden": "true" }
+                                        }),
+                                        _vm._v(" "),
+                                        _c("i", {
+                                          staticClass: "fa fa-star",
+                                          staticStyle: { color: "#9e9e9e" },
+                                          attrs: { "aria-hidden": "true" }
+                                        })
+                                      ])
+                                    ]
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c(
+                                  "div",
+                                  {
+                                    staticClass: "text-center",
+                                    staticStyle: { "margin-bottom": "10px" }
+                                  },
+                                  [
                                     _c(
-                                      "div",
+                                      "a",
                                       {
-                                        staticClass:
-                                          "profile-img-container text-center",
+                                        staticClass: "btn btn-success",
                                         staticStyle: {
-                                          padding: "5px 0px 0px 0px"
+                                          "border-radius": "25px",
+                                          background: "orange"
+                                        },
+                                        on: {
+                                          click: function($event) {
+                                            $event.preventDefault()
+                                            _vm.accept(request.id)
+                                          }
                                         }
                                       },
                                       [
-                                        _c(
-                                          "div",
-                                          {
-                                            staticClass:
-                                              "d-flex justify-content-center h-100"
-                                          },
-                                          [
-                                            _c(
-                                              "div",
-                                              {
-                                                staticClass:
-                                                  "image_outer_container"
-                                              },
-                                              [
-                                                _c(
-                                                  "div",
-                                                  {
-                                                    staticClass:
-                                                      "image_inner_container"
-                                                  },
-                                                  [
-                                                    _c("img", {
-                                                      staticClass: "shade",
-                                                      staticStyle: {
-                                                        height: "50px",
-                                                        width: "50px",
-                                                        border:
-                                                          "2px solid #f89406"
-                                                      },
-                                                      attrs: {
-                                                        src:
-                                                          "storage/" +
-                                                          request.user_img
-                                                      }
-                                                    })
-                                                  ]
-                                                )
-                                              ]
-                                            )
-                                          ]
-                                        )
+                                        _vm.direction === "ltr"
+                                          ? _c("span", [
+                                              _vm._v(_vm._s(_vm.EN.accept))
+                                            ])
+                                          : _c("span", [
+                                              _vm._v(_vm._s(_vm.AR.accept))
+                                            ])
                                       ]
-                                    )
-                                  ]),
-                                  _vm._v(" "),
-                                  _c("div", { staticClass: "col-md-8" }, [
+                                    ),
+                                    _vm._v(" "),
                                     _c(
-                                      "div",
+                                      "a",
                                       {
-                                        staticStyle: { "margin-bottom": "10px" }
+                                        staticClass: "btn btn-success",
+                                        staticStyle: {
+                                          "border-radius": "25px",
+                                          background: "orange"
+                                        },
+                                        on: {
+                                          click: function($event) {
+                                            $event.preventDefault()
+                                            _vm.reject(request.id)
+                                          }
+                                        }
                                       },
                                       [
-                                        _c(
-                                          "h3",
-                                          {
-                                            staticStyle: {
-                                              "padding-top": "5px !important",
-                                              "margin-bottom": "5px !important",
-                                              "font-size": "12px"
-                                            }
-                                          },
-                                          [
-                                            _vm._v(
-                                              "\n\t\t\t\t\t\t\t\t\t\t\t" +
-                                                _vm._s(request.name) +
-                                                "\n\t\t\t\t\t\t\t\t\t\t"
-                                            )
-                                          ]
-                                        ),
-                                        _vm._v(" "),
-                                        _c(
-                                          "p",
-                                          {
-                                            staticStyle: { "font-size": "11px" }
-                                          },
-                                          [
-                                            _c("i", {
-                                              staticClass: "fa fa-map-marker"
-                                            }),
-                                            _vm._v(" "),
-                                            _vm.direction === "ltr"
-                                              ? _c("span", [
-                                                  _vm._v(
-                                                    "\n\t\t\t\t\t\t\t\t\t\t\t\t" +
-                                                      _vm._s(
-                                                        request.player_profile
-                                                          .country.c_en_name
-                                                      ) +
-                                                      " \n                                            "
-                                                  )
-                                                ])
-                                              : _c("span", [
-                                                  _vm._v(
-                                                    "\n                                                " +
-                                                      _vm._s(
-                                                        request.player_profile
-                                                          .country.c_ar_name
-                                                      ) +
-                                                      "\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t"
-                                                  )
-                                                ]),
-                                            _vm._v(
-                                              "\n                                            , \n                                            "
-                                            ),
-                                            _vm.direction === "ltr"
-                                              ? _c("span", [
-                                                  _vm._v(
-                                                    "\n                                                " +
-                                                      _vm._s(
-                                                        request.player_profile
-                                                          .governorate.g_en_name
-                                                      ) +
-                                                      " \n                                            "
-                                                  )
-                                                ])
-                                              : _c("span", [
-                                                  _vm._v(
-                                                    "\n                                                " +
-                                                      _vm._s(
-                                                        request.player_profile
-                                                          .governorate.g_ar_name
-                                                      ) +
-                                                      "\t\t\t\t\t\t\t\t\t\n                                            "
-                                                  )
-                                                ]),
-                                            _vm._v(
-                                              "\n                                            ,\n                                            "
-                                            ),
-                                            _vm.direction === "ltr"
-                                              ? _c("span", [
-                                                  _vm._v(
-                                                    "\n                                                " +
-                                                      _vm._s(
-                                                        request.player_profile
-                                                          .area.a_en_name
-                                                      ) +
-                                                      "\n                                            "
-                                                  )
-                                                ])
-                                              : _c("span", [
-                                                  _vm._v(
-                                                    "\n                                                " +
-                                                      _vm._s(
-                                                        request.player_profile
-                                                          .area.a_ar_name
-                                                      ) +
-                                                      "\n                                            "
-                                                  )
-                                                ])
-                                          ]
-                                        ),
-                                        _vm._v(" "),
-                                        _c("span", [
-                                          _vm._v(
-                                            "\t\t\t\t\t\t\t\t\t\t\n                                            \n\t\t\t\t\t\t\t\t\t\t\t\t" +
-                                              _vm._s(
-                                                request.player_profile
-                                                  .averageRating
-                                              ) +
-                                              "\n\t\t\t\t\t\t\t\t\t\t\t\t\t"
-                                          ),
-                                          _c("i", {
-                                            staticClass: "fa fa-star",
-                                            staticStyle: { color: "#ffb300" },
-                                            attrs: { "aria-hidden": "true" }
-                                          }),
-                                          _vm._v(" "),
-                                          _c("i", {
-                                            staticClass: "fa fa-star",
-                                            staticStyle: { color: "#9e9e9e" },
-                                            attrs: { "aria-hidden": "true" }
-                                          })
-                                        ])
+                                        _vm.direction === "ltr"
+                                          ? _c("span", [
+                                              _vm._v(_vm._s(_vm.EN.reject))
+                                            ])
+                                          : _c("span", [
+                                              _vm._v(_vm._s(_vm.AR.reject))
+                                            ])
                                       ]
                                     )
+                                  ]
+                                )
+                              ])
+                            ]
+                          )
+                        ]
+                      )
+                    })
+                  )
+                ]
+              )
+            ]
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("div", { staticClass: "row" }, [
+          _c(
+            "div",
+            { staticClass: "col-md-12", attrs: { id: "search-filtter" } },
+            [
+              _c(
+                "div",
+                { staticClass: "panel panel-default shade top-bottom-border" },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "panel-heading text-center shade bottom-border"
+                    },
+                    [
+                      _vm.direction === "ltr"
+                        ? _c(
+                            "h4",
+                            {
+                              staticStyle: {
+                                color: "#06774a",
+                                margin: "5px 0px"
+                              }
+                            },
+                            [_vm._v(_vm._s(_vm.EN.pendingRequests))]
+                          )
+                        : _c(
+                            "h4",
+                            {
+                              staticStyle: {
+                                color: "#06774a",
+                                margin: "5px 0px"
+                              }
+                            },
+                            [_vm._v(_vm._s(_vm.AR.pendingRequests))]
+                          )
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "scroll",
+                      staticStyle: {
+                        "background-color": "#fff",
+                        height: "300px",
+                        "overflow-y": "scroll",
+                        "margin-bottom": "20px"
+                      }
+                    },
+                    _vm._l(_vm.pendings, function(request) {
+                      return _c(
+                        "div",
+                        {
+                          key: request.id,
+                          staticClass: "col-sm-6 col-xs-12 text-center"
+                        },
+                        [
+                          _c(
+                            "a",
+                            {
+                              staticClass: "a-holding-divs",
+                              attrs: { href: "profile/" + _vm.encryptedID },
+                              on: {
+                                mouseover: function($event) {
+                                  _vm.encrypt(request.id)
+                                }
+                              }
+                            },
+                            [
+                              _c(
+                                "div",
+                                {
+                                  staticClass: "Player shade border-20",
+                                  staticStyle: {
+                                    border: "1px solid #ffa500",
+                                    margin: "5px 0px"
+                                  }
+                                },
+                                [
+                                  _c("div", { staticClass: "row" }, [
+                                    _c("div", { staticClass: "col-md-4" }, [
+                                      _c(
+                                        "div",
+                                        {
+                                          staticClass:
+                                            "profile-img-container text-center",
+                                          staticStyle: {
+                                            padding: "5px 0px 0px 0px"
+                                          }
+                                        },
+                                        [
+                                          _c(
+                                            "div",
+                                            {
+                                              staticClass:
+                                                "d-flex justify-content-center h-100"
+                                            },
+                                            [
+                                              _c(
+                                                "div",
+                                                {
+                                                  staticClass:
+                                                    "image_outer_container"
+                                                },
+                                                [
+                                                  _c(
+                                                    "div",
+                                                    {
+                                                      staticClass:
+                                                        "image_inner_container"
+                                                    },
+                                                    [
+                                                      _c("img", {
+                                                        staticClass: "shade",
+                                                        staticStyle: {
+                                                          height: "50px",
+                                                          width: "50px",
+                                                          border:
+                                                            "2px solid #f89406"
+                                                        },
+                                                        attrs: {
+                                                          src:
+                                                            "storage/" +
+                                                            request.user_img
+                                                        }
+                                                      })
+                                                    ]
+                                                  )
+                                                ]
+                                              )
+                                            ]
+                                          )
+                                        ]
+                                      )
+                                    ]),
+                                    _vm._v(" "),
+                                    _c("div", { staticClass: "col-md-8" }, [
+                                      _c(
+                                        "div",
+                                        {
+                                          staticStyle: {
+                                            "margin-bottom": "10px"
+                                          }
+                                        },
+                                        [
+                                          _c(
+                                            "h3",
+                                            {
+                                              staticStyle: {
+                                                "padding-top": "5px !important",
+                                                "margin-bottom":
+                                                  "5px !important",
+                                                "font-size": "12px"
+                                              }
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n                                                " +
+                                                  _vm._s(request.name) +
+                                                  "\n                                            "
+                                              )
+                                            ]
+                                          ),
+                                          _vm._v(" "),
+                                          _c(
+                                            "p",
+                                            {
+                                              staticStyle: {
+                                                "font-size": "11px"
+                                              }
+                                            },
+                                            [
+                                              _c("i", {
+                                                staticClass: "fa fa-map-marker"
+                                              }),
+                                              _vm._v(" "),
+                                              _vm.direction === "ltr"
+                                                ? _c("span", [
+                                                    _vm._v(
+                                                      "\n                                                    " +
+                                                        _vm._s(
+                                                          request.player_profile
+                                                            .country.c_en_name
+                                                        ) +
+                                                        " \n                                                "
+                                                    )
+                                                  ])
+                                                : _c("span", [
+                                                    _vm._v(
+                                                      "\n                                                    " +
+                                                        _vm._s(
+                                                          request.player_profile
+                                                            .country.c_ar_name
+                                                        ) +
+                                                        "\t\t\t\t\t\t\t\t\t\t\t\n                                                "
+                                                    )
+                                                  ]),
+                                              _vm._v(
+                                                "\n                                                , \n                                                "
+                                              ),
+                                              _vm.direction === "ltr"
+                                                ? _c("span", [
+                                                    _vm._v(
+                                                      "\n                                                    " +
+                                                        _vm._s(
+                                                          request.player_profile
+                                                            .governorate
+                                                            .g_en_name
+                                                        ) +
+                                                        " \n                                                "
+                                                    )
+                                                  ])
+                                                : _c("span", [
+                                                    _vm._v(
+                                                      "\n                                                    " +
+                                                        _vm._s(
+                                                          request.player_profile
+                                                            .governorate
+                                                            .g_ar_name
+                                                        ) +
+                                                        "\t\t\t\t\t\t\t\t\t\n                                                "
+                                                    )
+                                                  ]),
+                                              _vm._v(
+                                                "\n                                                ,\n                                                "
+                                              ),
+                                              _vm.direction === "ltr"
+                                                ? _c("span", [
+                                                    _vm._v(
+                                                      "\n                                                    " +
+                                                        _vm._s(
+                                                          request.player_profile
+                                                            .area.a_en_name
+                                                        ) +
+                                                        "\n                                                "
+                                                    )
+                                                  ])
+                                                : _c("span", [
+                                                    _vm._v(
+                                                      "\n                                                    " +
+                                                        _vm._s(
+                                                          request.player_profile
+                                                            .area.a_ar_name
+                                                        ) +
+                                                        "\n                                                "
+                                                    )
+                                                  ])
+                                            ]
+                                          ),
+                                          _vm._v(" "),
+                                          _c("span", [
+                                            _vm._v(
+                                              "\t\t\t\t\t\t\t\t\t\t\n                                                \n                                                    " +
+                                                _vm._s(
+                                                  request.player_profile
+                                                    .averageRating
+                                                ) +
+                                                "\n                                                        "
+                                            ),
+                                            _c("i", {
+                                              staticClass: "fa fa-star",
+                                              staticStyle: { color: "#ffb300" },
+                                              attrs: { "aria-hidden": "true" }
+                                            }),
+                                            _vm._v(" "),
+                                            _c("i", {
+                                              staticClass: "fa fa-star",
+                                              staticStyle: { color: "#9e9e9e" },
+                                              attrs: { "aria-hidden": "true" }
+                                            })
+                                          ])
+                                        ]
+                                      )
+                                    ])
                                   ])
-                                ])
-                              ]
-                            )
-                          ]
-                        )
-                      ]
-                    )
-                  })
-                )
-              ]
-            )
-          ]
-        )
+                                ]
+                              )
+                            ]
+                          )
+                        ]
+                      )
+                    })
+                  )
+                ]
+              )
+            ]
+          )
+        ])
       ])
     ])
   ])
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "panel-heading text-center shade bottom-border" },
-      [
-        _c("h4", { staticStyle: { color: "#06774a", margin: "5px 0px" } }, [
-          _vm._v("Friends Requests")
-        ])
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "panel-heading text-center shade bottom-border" },
-      [
-        _c("h4", { staticStyle: { color: "#06774a", margin: "5px 0px" } }, [
-          _vm._v("Pending Requests")
-        ])
-      ]
-    )
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
     require("vue-hot-reload-api")      .rerender("data-v-4d05141d", module.exports)
+  }
+}
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(44)
+/* template */
+var __vue_template__ = __webpack_require__(45)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\addFriend.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-0b41d5d8", Component.options)
+  } else {
+    hotAPI.reload("data-v-0b41d5d8", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            status: '',
+            dir: '',
+            friendId: '',
+
+            EN: {
+                addFriends: 'Add As Friend',
+                unFriend: 'UnFriend',
+                pendingRequest: 'Pending Request',
+                acceptRequest: 'Accept',
+                deleteRequest: 'Reject',
+                userAddedYou: 'This user sent you a friend request'
+            },
+            AR: {
+                addFriends: 'ارسل طلب صداقة',
+                unFriend: 'حذف من الأصدقاء',
+                pendingRequest: 'قيد الأنتظار',
+                acceptRequest: 'قبول',
+                deleteRequest: 'رفض',
+                userAddedYou: 'هذا المستخدم ارسل لك طلب صداقة'
+            }
+
+        };
+    },
+    props: ['user'],
+    created: function created() {
+        var _this = this;
+
+        console.log(this.user);
+        var uri = '/IsFriendWith/' + this.user;
+        Axios.get(uri).then(function (response) {
+            console.log(response);
+            _this.status = response.data.friend_status;
+            _this.dir = response.data.dir;
+            _this.friendId = response.data.friend_id;
+        });
+    },
+    methods: {
+        add: function add(id) {
+            var _this2 = this;
+
+            var url = '/addfriend/' + id;
+            Axios.get(url).then(function (response) {
+                _this2.status = 'pending';
+                console.log(_this2.status);
+            });
+        },
+        unfriend: function unfriend(id) {
+            var _this3 = this;
+
+            var url = '/unfriend/' + id;
+            Axios.get(url).then(function (response) {
+                _this3.status = 'add';
+                console.log(_this3.status);
+            });
+        },
+        accept: function accept(id) {
+            var _this4 = this;
+
+            var uri = '/acceptfriend/' + id;
+            Axios.get(uri).then(function (response) {
+                _this4.status = 'un';
+                console.log(_this4.status);
+            });
+        },
+        reject: function reject(id) {
+            var _this5 = this;
+
+            var uri = '/rejectfriend/' + id;
+            Axios.get(uri).then(function (response) {
+                _this5.status = 'add';
+                console.log(_this5.status);
+            });
+        }
+
+    }
+});
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { attrs: { id: "" } }, [
+    _vm.status === "un"
+      ? _c("div", { attrs: { id: "unfriend" } }, [
+          _c("div", { staticClass: "text-center" }, [
+            _c(
+              "a",
+              {
+                staticClass: "btn btn-success",
+                staticStyle: { "border-radius": "25px", background: "orange" },
+                on: {
+                  click: function($event) {
+                    $event.preventDefault()
+                    _vm.unfriend(_vm.user)
+                  }
+                }
+              },
+              [
+                _vm.dir === "ltr"
+                  ? _c("span", [
+                      _vm._v(
+                        "\n                " +
+                          _vm._s(_vm.EN.unFriend) +
+                          "\n            "
+                      )
+                    ])
+                  : _c("span", [_vm._v(_vm._s(_vm.AR.unFriend))])
+              ]
+            )
+          ])
+        ])
+      : _vm.status === "pending"
+        ? _c("div", { staticClass: "text-center" }, [
+            _c(
+              "span",
+              {
+                staticClass: "btn btn-success",
+                staticStyle: { "border-radius": "25px", background: "gray" }
+              },
+              [
+                _vm.dir === "ltr"
+                  ? _c("span", [
+                      _vm._v(
+                        "\n                " +
+                          _vm._s(_vm.EN.pendingRequest) +
+                          "\n        "
+                      )
+                    ])
+                  : _c("span", [_vm._v(_vm._s(_vm.AR.pendingRequest))])
+              ]
+            )
+          ])
+        : _vm.status === "add"
+          ? _c("div", { attrs: { id: "addfriend" } }, [
+              _c("div", { staticClass: "text-center" }, [
+                _c(
+                  "a",
+                  {
+                    staticClass: "btn btn-success",
+                    staticStyle: {
+                      "border-radius": "25px",
+                      background: "orange"
+                    },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        _vm.add(_vm.user)
+                      }
+                    }
+                  },
+                  [
+                    _vm.dir === "ltr"
+                      ? _c("span", [
+                          _vm._v(
+                            "\n                " +
+                              _vm._s(_vm.EN.addFriends) +
+                              "\n        "
+                          )
+                        ])
+                      : _c("span", [_vm._v(_vm._s(_vm.AR.addFriends))])
+                  ]
+                )
+              ])
+            ])
+          : _vm.status === "respond"
+            ? _c("div", { attrs: { id: "addfriend" } }, [
+                _c("div", { staticClass: "text-center" }, [
+                  _vm.dir === "ltr"
+                    ? _c("p", { staticStyle: { color: "beige" } }, [
+                        _vm._v(_vm._s(_vm.EN.userAddedYou))
+                      ])
+                    : _c("p", { staticStyle: { color: "beige" } }, [
+                        _vm._v(_vm._s(_vm.AR.userAddedYou))
+                      ]),
+                  _vm._v(" "),
+                  _c(
+                    "a",
+                    {
+                      staticClass: "btn btn-success",
+                      staticStyle: {
+                        "border-radius": "25px",
+                        background: "orange"
+                      },
+                      on: {
+                        click: function($event) {
+                          $event.preventDefault()
+                          _vm.accept(_vm.friendId)
+                        }
+                      }
+                    },
+                    [
+                      _vm.dir === "ltr"
+                        ? _c("span", [
+                            _vm._v(
+                              "\n                " +
+                                _vm._s(_vm.EN.acceptRequest) +
+                                "\n        "
+                            )
+                          ])
+                        : _c("span", [_vm._v(_vm._s(_vm.AR.acceptRequest))])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "a",
+                    {
+                      staticClass: "btn btn-success",
+                      staticStyle: {
+                        "border-radius": "25px",
+                        background: "orange"
+                      },
+                      on: {
+                        click: function($event) {
+                          $event.preventDefault()
+                          _vm.deleteRequest(_vm.friendId)
+                        }
+                      }
+                    },
+                    [
+                      _vm.dir === "ltr"
+                        ? _c("span", [
+                            _vm._v(
+                              "\n                " +
+                                _vm._s(_vm.EN.deleteRequest) +
+                                "\n        "
+                            )
+                          ])
+                        : _c("span", [_vm._v(_vm._s(_vm.AR.deleteRequest))])
+                    ]
+                  )
+                ])
+              ])
+            : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-0b41d5d8", module.exports)
   }
 }
 
